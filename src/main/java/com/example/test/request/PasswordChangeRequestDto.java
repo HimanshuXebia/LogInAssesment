@@ -2,7 +2,7 @@ package com.example.test.request;
 
 import jakarta.validation.constraints.NotEmpty;
 
-public class PasswordResetRequestDto {
+public class PasswordChangeRequestDto {
     @NotEmpty
     private String userName;
 

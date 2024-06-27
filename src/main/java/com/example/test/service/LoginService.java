@@ -3,7 +3,7 @@ package com.example.test.service;
 import java.util.List;
 
 import com.example.test.entity.Users;
-import com.example.test.request.PasswordResetRequestDto;
+import com.example.test.request.PasswordChangeRequestDto;
 import com.example.test.request.UserLoginRequestDto;
 
 public interface LoginService {
@@ -12,6 +12,6 @@ public interface LoginService {
 	
 	List<Users> getAllUsers();
 	
-	String resetPassword(PasswordResetRequestDto passwordResetRequestDto) throws Exception;
+	String changePassword(PasswordChangeRequestDto passwordChangeRequestDto) throws Exception;
 
 }
