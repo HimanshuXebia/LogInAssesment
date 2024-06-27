@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.test.dao.RegisterUserRepo;
 import com.example.test.entity.Users;
-import com.example.test.request.PasswordResetRequestDto;
+import com.example.test.exception.ApiException;
+import com.example.test.request.PasswordChangeRequestDto;
 import com.example.test.request.UserLoginRequestDto;
 import com.example.test.service.LoginService;
 import com.example.test.util.ConstantUtil;
@@ -29,7 +31,7 @@ public class LoginServiceImpl implements LoginService {
 	private Users isUserPresent(String userName) throws Exception {
 		Optional<Users> optionalUser = registerUserRepo.findByUserName(userName);
 		if(!optionalUser.isPresent()) {
-			throw new Exception("Username does not exists in database");
+			throw new ApiException(HttpStatus.BAD_REQUEST, ConstantUtil.USER_NOT_EXIST);
 		}
 		return optionalUser.get();
 	}
@@ -48,16 +50,16 @@ public class LoginServiceImpl implements LoginService {
 	public Users loginUser(UserLoginRequestDto userLoginRequestDto) throws Exception {
 		// TODO Auto-generated method stub
 		Users user = isUserPresent(userLoginRequestDto.getUserName());
-		if(user.isBlocked()) {
-			if(user.getBlockedDate().plusHours(ConstantUtil.BLOCK_DURATION).isBefore(LocalDateTime.now())) {
-				// Unblock the user
-				user.setBlocked(false);
-				user.setBlockedDate(null);
-				user.setNumberOfAttempts(0);
-				registerUserRepo.save(user);
-			}else {
-				throw new Exception("User is blocked. Please try again");
-			}
+		if(!user.isBlocked()) {
+			throw new ApiException(HttpStatus.LOCKED, "User is blocked. Please try again");
+		}
+		if(user.getBlockedDate().plusHours(ConstantUtil.BLOCK_DURATION).isBefore(LocalDateTime.now())) {
+			// Unblock the user
+			user.setBlocked(false);
+			user.setBlockedDate(null);
+			user.setNumberOfAttempts(0);
+			registerUserRepo.save(user);
+			
 		}
 		
 		if(!passwordValidation(user, userLoginRequestDto)) {
@@ -66,15 +68,15 @@ public class LoginServiceImpl implements LoginService {
 			registerUserRepo.save(user);
 			if(user.getNumberOfAttempts() >= ConstantUtil.BLOCK_DURATION) {
 				// all the attempts have been failed 
-				throw new Exception("User is blocked now. ");
+				throw new ApiException(HttpStatus.LOCKED, "User is blocked now.");
 			}else {
-				throw new Exception("Password is wrong try again!");
+				throw new ApiException(HttpStatus.BAD_REQUEST, "Password is wrong try again!");
 			}
 		}else {
 			user.setNumberOfAttempts(0);
 			registerUserRepo.save(user);
+			return user;
 		}
-		return user;
 	}
 
 
@@ -86,11 +88,11 @@ public class LoginServiceImpl implements LoginService {
 
 
 	@Override
-	public String resetPassword(PasswordResetRequestDto passwordResetRequestDto) throws Exception {
+	public String changePassword(PasswordChangeRequestDto passwordChangeRequestDto) throws Exception {
 		// TODO Auto-generated method stub
-		Users user = isUserPresent(passwordResetRequestDto.getUserName());
-		if(passwordResetRequestDto.getCurrentPassword().equals(user.getPassword())) {
-			user.setPassword(passwordResetRequestDto.getNewPassword());
+		Users user = isUserPresent(passwordChangeRequestDto.getUserName());
+		if(passwordChangeRequestDto.getCurrentPassword().equals(user.getPassword())) {
+			user.setPassword(passwordChangeRequestDto.getNewPassword());
 			registerUserRepo.save(user);
 			return "Password has been reset successfully";
 		}else {

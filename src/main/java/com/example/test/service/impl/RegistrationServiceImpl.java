@@ -27,10 +27,7 @@ public class RegistrationServiceImpl  implements RegistrationService{
 	@Override
 	public String registerUser(UserRegistrationRequestDto userRegistrationRequestDto) {
 		// TODO Auto-generated method stub
-		System.out.println("This is my data before updating" + userRegistrationRequestDto.getUserName());
 		Users user = modelMapper.map(userRegistrationRequestDto, Users.class);
-		
-		System.out.println("This is my user after updating"+user.toString());
 		registerUserRepo.save(user);
 		return "User has created";
 	}

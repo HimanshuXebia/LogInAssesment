@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.test.entity.Users;
-import com.example.test.request.PasswordResetRequestDto;
+import com.example.test.request.PasswordChangeRequestDto;
 import com.example.test.request.UserLoginRequestDto;
 import com.example.test.service.LoginService;
 
@@ -43,9 +43,9 @@ public class LoginController {
 		return ResponseEntity.status(HttpStatus.OK).body(user);
 	}
 	
-	@PostMapping("/reset-password")
-	public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequestDto passwordResetRequestDto) throws Exception{
-		return ResponseEntity.ok(loginService.resetPassword(passwordResetRequestDto));
+	@PostMapping("/change-password")
+	public ResponseEntity<String> changePassword(@RequestBody PasswordChangeRequestDto passwordChangeRequestDto) throws Exception{
+		return ResponseEntity.ok(loginService.changePassword(passwordChangeRequestDto));
 	}
 	
 }
